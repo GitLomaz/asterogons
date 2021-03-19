@@ -1,0 +1,11 @@
+@font-face {
+  font-family: neue;
+  src: url("../assets/fonts/neue.otf");
+}
+
+body {
+  margin: 0px;
+  font-family: neue;
+  user-select: none;
+  overflow: hidden;
+}
