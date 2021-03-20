@@ -27,6 +27,7 @@ var poly2
 var bodies
 var compoundBody
 var scene
+var counter = 0
 var game = new Phaser.Game(config);
 
 function preload () {
@@ -131,6 +132,12 @@ function create () {
 }
 
 function update() {
+  counter++;
+
+  if (counter  % 60 === 0) {
+    spawnAsterogon();
+  }
+
   compoundBody.gameObject.setAngularVelocity(.03)
   compoundBody.gameObject.setPosition(200, 200)
   // console.log(Math.hypot(poly2.body.velocity.x, poly2.body.velocity.y))
