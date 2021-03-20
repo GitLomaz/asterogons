@@ -1,7 +1,10 @@
+const HEIGHT = 595;
+const WIDTH = 1105;
+
 var config = {
   type: Phaser.AUTO,
-  width: 800,
-  height: 600,
+  width: WIDTH,
+  height: HEIGHT,
   backgroundColor: '#efefef',
   parent: 'phaser-example',
   physics: {
@@ -21,7 +24,9 @@ var config = {
 
 var objects = []
 var poly2
+var bodies
 var compoundBody
+var scene
 var game = new Phaser.Game(config);
 
 function preload () {
@@ -29,6 +34,8 @@ function preload () {
 }
 
 function create () {
+
+  scene = this
   // this.matter.world.setBounds().disableGravity();
 
   var arrow = '40 0 40 20 100 20 100 80 40 80 40 100 0 50';
@@ -48,7 +55,7 @@ function create () {
 
 
 
-  var Bodies = Phaser.Physics.Matter.Matter.Bodies;
+  Bodies = Phaser.Physics.Matter.Matter.Bodies;
 
   // var rectA = Bodies.rectangle(200, 200, 20, 20);
   // var rectB = Bodies.rectangle(300, 300, 20, 20);
@@ -66,10 +73,6 @@ function create () {
       parts: [ rectA, rectB]
   });
   var block = this.matter.add.image(150, 0, 'block');
-  console.log('compoundBody')
-  console.log(compoundBody)
-  console.log('block')
-  console.log(block)
   block.setAngularVelocity(1)
 
   // this.tweens.add({
@@ -82,7 +85,7 @@ function create () {
 
   block.setExistingBody(compoundBody);
 
-  compoundBody.gameObject.setBounce(5 )
+  compoundBody.gameObject.setBounce(5)
 
 
   
@@ -92,6 +95,7 @@ function create () {
 
   this.matter.add.gameObject(poly2, { shape: { type: 'fromVerts', verts: chevron, flagInternal: true } });
 
+  spawnAsterogon()
 
   poly2.setVelocity(1, 0);
   poly2.setBounce(1);
@@ -122,36 +126,63 @@ function create () {
   // // poly3.setCollidesWith([ cat2 ]);
 
   this.matter.world.on('collisionstart', function (event, bodyA, bodyB) {
-    event.pairs[0].separation = 0
-    console.log(event.pairs[0])
+    // event.pairs[0].separation = 0
   });
 }
 
 function update() {
   compoundBody.gameObject.setAngularVelocity(.03)
   compoundBody.gameObject.setPosition(200, 200)
-  if (Math.hypot(poly2.body.velocity.x, poly2.body.velocity.y) > 25) {
-    poly2.setFriction(0, 0.5, 0);
-  } else if (Math.hypot(poly2.body.velocity.x, poly2.body.velocity.y) > 15) {
-    poly2.setFriction(0, 0.1, 0);
-  } else if (Math.hypot(poly2.body.velocity.x, poly2.body.velocity.y) > 5) {
-    poly2.setFriction(0, 0.005, 0);
-  } else if (Math.hypot(poly2.body.velocity.x, poly2.body.velocity.y) > 2) {
-    poly2.setFriction(0, 0.001, 0);
-  } else {
-    poly2.setFriction(0, 0, 0);
-  }
-  console.log(Math.hypot(poly2.body.velocity.x, poly2.body.velocity.y))
+  // console.log(Math.hypot(poly2.body.velocity.x, poly2.body.velocity.y))
   _.each(objects, function(ob){
-    if(ob.x > 800) {
+
+    if (Math.hypot(ob.body.velocity.x, ob.body.velocity.y) > 25) {
+      ob.setFriction(0, 0.5, 0);
+    } else if (Math.hypot(ob.body.velocity.x, ob.body.velocity.y) > 15) {
+      ob.setFriction(0, 0.1, 0);
+    } else if (Math.hypot(ob.body.velocity.x, ob.body.velocity.y) > 5) {
+      ob.setFriction(0, 0.005, 0);
+    } else if (Math.hypot(ob.body.velocity.x, ob.body.velocity.y) > 2) {
+      ob.setFriction(0, 0.001, 0);
+    } else {
+      ob.setFriction(0, 0, 0);
+    }
+
+    if(ob.x > WIDTH) {
       ob.x = 0
     } else if (ob.x < 0) {
-      ob.x = 800
+      ob.x = WIDTH
     }
-    if(ob.y > 600) {
+    if(ob.y > HEIGHT) {
       ob.y = 0
     } else if (ob.y < 0) {
-      ob.y = 600
+      ob.y = HEIGHT
     }
   })
+}
+
+function spawnAsterogon(sides = 6, size = 80, velocity, position) {
+  if (!position) { 
+    if (Phaser.Math.Between(0, 1)) {
+      position = {
+        x: Phaser.Math.Between(0, WIDTH),
+        y: 0
+      }
+    } else {
+      position = {
+        y: Phaser.Math.Between(0, HEIGHT),
+        x: 0
+      }
+    }
+
+  }
+  const asterogon = scene.matter.add.image(position.x, position.y, 'block');
+  asterogon.setBody({type: 'polygon', sides: sides, radius: size})
+
+  // const asterogon = Bodies.polygon(position.x, position.y, sides, size)
+  // scene.matter.add.gameObject(asterogon)
+  asterogon.setVelocity(1, 0);
+  asterogon.setBounce(1);
+  asterogon.setFriction(0, .001, 0);
+  objects.push(asterogon)
 }
